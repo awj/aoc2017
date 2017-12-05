@@ -10,10 +10,21 @@ defmodule Aoc2 do
     |> Enum.sum
   end
 
+  def divisible_checksum(input) do
+    input
+    |> parse
+    |> Enum.map(&(divisible_row_calc(&1)))
+    |> Enum.sum
+  end
+
   def parse(input_string) do
     String.trim(input_string)
     |> String.split("\n")
     |> Enum.map(&(parse_row(&1)))
+  end
+
+  def permutations(row) do
+    for x <- row, y <- row -- [x], do: {x, y}
   end
 
   def row_calc(row) do
@@ -24,6 +35,13 @@ defmodule Aoc2 do
     high - low
   end
 
+  def divisible_row_calc(row) do
+    {high, low} = row
+                  |> permutations
+                  |> Enum.find(fn({a,b}) -> rem(a, b) == 0 end)
+    div(high, low)
+  end
+  
   def absorb(x, {high, low}) when x > high do
     {x, low}
   end
