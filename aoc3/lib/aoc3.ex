@@ -3,6 +3,51 @@ defmodule Aoc3 do
   Documentation for Aoc3.
   """
 
+  # Generate an infinite stream of position values based on walking
+  # out from the starting point to calculate them.
+  def posvalues do
+    Stream.resource(
+      fn -> {{0,0,:east}, %{ {0,0} => 1 }} end,
+      fn({last_move, map}) ->
+        {x,y,dir} = move(last_move)
+        new_location = {x,y}
+        new_value    = calc_value(new_location, map)
+        updated_map  = Map.merge(map, %{new_location => new_value})
+        { [new_value], { {x,y,dir}, updated_map } }
+      end,
+      fn(x) -> x end
+    )
+  end
+
+  # Find the first spiral value that exceeds the provided value, given
+  # diagonal calculation
+  def diagonal_val(seeking) do
+    Aoc3.posvalues
+    |> Enum.find(&(&1 > seeking))
+  end
+
+  # Look up the value for the position, given the current state map
+  def calc_value(pos, map) do
+    surrounding(pos)
+    |> Stream.map(&(Map.get(map, &1, 0)))
+    |> Enum.sum
+  end
+
+  # Calculate out the point locations surrounding the provided
+  # position
+  def surrounding({x,y}) do
+    [
+      {x - 1, y},
+      {x + 1, y},
+      {x, y - 1},
+      {x, y + 1},
+      {x - 1, y - 1},
+      {x + 1, y - 1},
+      {x - 1, y + 1},
+      {x + 1, y + 1},
+    ]
+  end
+
   def steps(1) do 0 end
   
   def steps(location) do
