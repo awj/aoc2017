@@ -18,23 +18,30 @@ defmodule Aoc8 do
   end
 
   def find_highest_value(input) do
-    state = Map.new
+    state = {0, Map.new}
     
-    input
+    {highest, _} = input
     |> String.trim
     |> String.split("\n")
     |> Enum.map(&(parse(&1)))
     |> Enum.reduce(state, fn(inst, state) -> execute(inst, state) end)
-    |> Map.values
-    |> Enum.max
+
+    highest
   end
 
-  def execute({reg, change, cond_reg, comp, val}, state) do
+  def execute({reg, change, cond_reg, comp, val}, {highest, state}) do
     if runnable?(state, cond_reg, comp, val) do
       current = Map.get(state, reg, 0)
-      Map.put(state, reg, current + change)
+      updated = current + change
+      new_state = Map.put(state, reg, updated)
+
+      if updated > highest do
+        {updated, new_state}
+      else
+        {highest, new_state}
+      end
     else
-      state
+      {highest, state}
     end
   end
 
