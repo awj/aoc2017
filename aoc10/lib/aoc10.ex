@@ -3,6 +3,8 @@ defmodule Aoc10 do
   Documentation for Aoc10.
   """
 
+  use Bitwise
+
   defstruct state: nil, skip: 0, size: 0, position: 0
  
   def new(size) do
@@ -12,11 +14,61 @@ defmodule Aoc10 do
     %Aoc10{state: state, size: size}
   end
 
+  def process_rounds(size, commands, rounds) do
+    state = new(size)
+
+    run_rounds(state, commands, rounds)
+  end
+
+  def run_rounds(state, _, 0) do
+    state
+  end
+
+  def run_rounds(state, commands, rounds) do
+    new_state = commands
+    |> Enum.reduce(state, fn(x, acc) -> resolve(acc, x) end)
+
+    run_rounds(new_state, commands, rounds - 1)
+  end
+
+  # Note: assume 256 size state
+  def xor_blocks(state) do
+    (0..15)
+    |> Enum.map(fn(x) -> get_block(x, state) end)
+  end
+
+  def print_block(block) do
+    block
+    |> Enum.map(fn(x) -> stringify(x) end)
+    |> Enum.join("")
+  end
+
+  def stringify(digit) do
+    s = Integer.to_string(digit, 16)
+    if String.length(s) == 1 do
+      "0#{s}"
+    else
+      s
+    end
+  end
+
+  def get_block(id, state) do
+    start = id * 16
+    ending = start + 15
+    (start..ending)
+    |> Enum.map(fn(x) -> Map.get(state, x) end)
+    |> Enum.reduce(fn(x, acc) -> x ^^^ acc end)
+  end
+
   def process(size, commands) do
     state = new(size)
 
     commands
     |> Enum.reduce(state, fn(x, acc) -> resolve(acc, x) end)
+  end
+
+  def read_commands(input) do
+    Enum.to_list(to_charlist(input)) ++ [17, 31, 73, 47, 23]
   end
 
   def resolve(content, length) do
