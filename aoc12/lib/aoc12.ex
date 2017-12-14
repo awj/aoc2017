@@ -3,18 +3,25 @@ defmodule Aoc12 do
   Documentation for Aoc12.
   """
 
-  defstruct seen: MapSet.new, can_reach: MapSet.new, pipes: Map.new
+  defstruct groups: [], pipes: Map.new
 
   def new(pipes) do
     %Aoc12{pipes: pipes}
   end
 
   def eval(state, procid) do
-    state = %{state | seen: MapSet.put(state.seen, procid), can_reach: MapSet.put(state.can_reach, procid) }
-    worklist = Map.get(state.pipes, procid)
-    |> Enum.reject(fn(x) -> MapSet.member?(state.seen, x) end)
+    candidates = [procid | Map.get(state.pipes, procid)]
 
-    Enum.reduce(worklist, state, fn(x, acc) -> eval(acc, x) end)
+    {contains, not_contain} = state.groups
+    |> Enum.split_with(fn(g) -> Enum.any?(candidates, &(MapSet.member?(g, &1))) end)
+
+    if Enum.empty?(contains) do
+      %{state | groups: [MapSet.new(candidates) | not_contain] }
+    else
+      merged = Enum.reduce(contains, fn(x, acc) -> MapSet.union(x, acc) end)
+      merged = Enum.reduce(candidates, merged, fn(x, acc) -> MapSet.put(acc, x) end)
+      %{state | groups: [merged | not_contain] }
+    end
   end
 
   def parse(input) do
