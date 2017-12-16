@@ -3,7 +3,7 @@ defmodule Aoc13 do
   Documentation for Aoc13.
   """
   defmodule Scanner do
-    defstruct position: 0, depth: 0, range: 0, direction: :down
+    defstruct depth: 0, range: 0
 
     def new(depth, range) do
       %Scanner{depth: depth, range: range}
@@ -29,24 +29,6 @@ defmodule Aoc13 do
 
         rem(time, zero_every) == 0
       end
-    end
-
-    def move(%Scanner{position: position, range: range, direction: :up} = scanner)
-    when position == 0 do
-      %{scanner | direction: :down, position: 1}
-    end
-
-    def move(%Scanner{position: position, range: range, direction: :up} = scanner) do
-      %{scanner | position: scanner.position - 1}
-    end
-
-    def move(%Scanner{position: position, range: range, direction: :down} = scanner)
-    when position == range do
-      %{scanner | direction: :up, position: range - 1}
-    end
-
-    def move(%Scanner{position: position, range: range, direction: :down} = scanner) do
-      %{scanner | position: scanner.position + 1}
     end
   end
 
